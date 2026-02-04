@@ -11,9 +11,9 @@ generate_product_version(
         COMPANY_COPYRIGHT "Throne"
         FILE_DESCRIPTION "Throne"
 )
-add_definitions(-DUNICODE -D_UNICODE -DNOMINMAX)
+add_definitions(-DUNICODE -D_UNICODE -DNOMINMAX -D_WIN32_WINNT=0x0A00 -DWINVER=0x0A00)
 set(GUI_TYPE WIN32)
 if (MSVC)
     add_compile_options("/utf-8")
-    add_definitions(-D_WIN32_WINNT=0x600 -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
 endif ()

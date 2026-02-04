@@ -2,6 +2,8 @@
 
 #include "include/stats/traffic/TrafficLooper.hpp"
 #include "include/api/RPC.h"
+#include "include/api/HttpAPI.h"
+#include "include/api/NodeRotation.h"
 #include "include/ui/utils//MessageBoxTimer.h"
 #include "3rdparty/qv2ray/v2/proxy/QvProxyConfigurator.hpp"
 
@@ -31,6 +33,41 @@ void MainWindow::setup_rpc() {
     // Looper
     runOnNewThread([=] { Stats::trafficLooper->Loop(); });
     runOnNewThread([=] {Stats::connection_lister->Loop(); });
+
+    // Setup HTTP API Server
+    if (!httpAPIServer) {
+        httpAPIServer = new HttpAPIServer();
+
+        if (!nodeRotationManager) {
+            nodeRotationManager = new NodeRotationManager();
+            nodeRotationManager->SetStartProfileCallback([](int profileId) {
+                runOnUiThread([profileId]() {
+                    auto mw = GetMainWindow();
+                    if (mw) {
+                        mw->profile_start(profileId);
+                    }
+                });
+            });
+        }
+
+        httpAPIServer->SetNodeSwitchCallback([]() -> NodeRotationResult {
+            if (nodeRotationManager) {
+                return nodeRotationManager->SwitchToNextInCurrentGroup();
+            }
+            NodeRotationResult result;
+            result.success = false;
+            result.error = "Node rotation manager not initialized";
+            return result;
+        });
+
+        if (httpAPIServer->Start("127.0.0.1", 15555)) {
+            MW_show_log(QString("[API] HTTP API server started on 127.0.0.1:15555"));
+            MW_show_log(QString("[API] Token: %1").arg(httpAPIServer->GetToken()));
+            MW_show_log(QString("[API] Use this token in Authorization header: Bearer %1").arg(httpAPIServer->GetToken()));
+        } else {
+            MW_show_log("[API] Failed to start HTTP API server");
+        }
+    }
 }
 
 void MainWindow::runURLTest(const QString& config, const QString& xrayConfig, bool useDefault, const QStringList& outboundTags, const QMap<QString, int>& tag2entID, int entID) {

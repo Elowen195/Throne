@@ -106,6 +106,11 @@ set(PROJECT_SOURCES
         3rdparty/SQLiteCpp/src/Transaction.cpp
 
         src/api/RPC.cpp
+        src/api/HttpAPI.cpp
+        src/api/NodeRotation.cpp
+        include/api/HttpAPI.h
+        include/api/NodeRotation.h
+        3rdparty/httplib.h
 
         src/stats/traffic/TrafficLooper.cpp
 
