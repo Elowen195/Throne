@@ -39,18 +39,22 @@ namespace API {
 
         result.total_nodes = profiles.size();
 
-        int currentIndex = group_current_index_.value(group->id, -1);
+        int currentIndex = -1;
+        int startedId = -1;
+        if (Configs::dataManager && Configs::dataManager->settingsRepo) {
+            startedId = Configs::dataManager->settingsRepo->started_id;
+        }
+        if (startedId >= 0) {
+            int idx = profiles.indexOf(startedId);
+            if (idx >= 0) {
+                currentIndex = idx;
+            }
+        }
+        if (currentIndex < 0) {
+            currentIndex = group_current_index_.value(group->id, -1);
+        }
         if (currentIndex < 0 || currentIndex >= profiles.size()) {
-            int startedId = -1;
-            if (Configs::dataManager && Configs::dataManager->settingsRepo) {
-                startedId = Configs::dataManager->settingsRepo->started_id;
-            }
-            if (startedId >= 0) {
-                int idx = profiles.indexOf(startedId);
-                if (idx >= 0) {
-                    currentIndex = idx;
-                }
-            }
+            currentIndex = -1;
         }
 
         if (currentIndex >= 0 && currentIndex < profiles.size()) {
